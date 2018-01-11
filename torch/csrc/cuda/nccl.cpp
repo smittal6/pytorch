@@ -57,13 +57,10 @@ static std::unordered_map<device_list, NcclCommList, torch::hash<device_list>> _
 
 ArrayRef<ncclComm_t> _get_communicators(TensorList inputs) {
   static auto get_device = [](const at::Tensor& t) -> int { return t.get_device(); };
-  device_list devices;
-  devices.reserve(16);
-  for (auto & t : inputs)
-    devices.push_back(t.get_device());
+  device_list devices = fmap(inputs, get_device);
   auto it = _communicators.find(devices);
   if (it == _communicators.end())
-    std::tie(it, std::ignore) = _communicators.emplace(devices, fmap(inputs, get_device));
+    std::tie(it, std::ignore) = _communicators.emplace(devices, devices);
   return it->second.ref();
 }
 

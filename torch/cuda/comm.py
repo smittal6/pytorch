@@ -5,8 +5,37 @@ from torch._utils import _accumulate, _take_tensors, _flatten_dense_tensors, \
     _unflatten_sparse_tensors, _reorder_tensors_as
 
 try:
+    from torch._C import _add_docstr as add_docstr
     from torch._C import _broadcast as broadcast
     from torch._C import _broadcast_coalesced as broadcast_coalesced
+    add_docstr(broadcast,
+               r"""
+    Broadcasts a tensor to a number of GPUs.
+    Arguments:
+        tensor (Tensor): tensor to broadcast.
+        devices (Iterable): an iterable of devices among which to broadcast.
+          Note that it should be like (src, dst1, dst2, ...), the first element
+          of which is the source device to broadcast from.
+    Returns:
+        A tuple containing copies of the ``tensor``, placed on devices
+        corresponding to indices from ``devices``.
+    """)
+
+    add_docstr(broadcast_coalesced,
+               r"""
+    Broadcasts a sequence of tensors to the specified GPUs.
+    Small tensors are first coalesced into a buffer to reduce the number
+    of synchronizations.
+    Arguments:
+        tensors (sequence): tensors to broadcast.
+        devices (Iterable): an iterable of devices among which to broadcast.
+          Note that it should be like (src, dst1, dst2, ...), the first element
+          of which is the source device to broadcast from.
+        buffer_size (int): maximum size of the buffer used for coalescing
+    Returns:
+        A tuple containing copies of the ``tensor``, placed on devices
+        corresponding to indices from ``devices``.
+    """)
 except ImportError:
     def broadcast(*args, **kwargs):
         torch.cuda._lazy_init()

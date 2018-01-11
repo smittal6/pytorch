@@ -9,7 +9,7 @@ using namespace at;
 std::vector<TensorGroup> take_tensors(const TensorList& tensors, std::size_t size_limit) {
   std::vector<TensorGroup> results;
   results.reserve(tensors.size()); // an overapproximation, but at least we won't have to copy stuff around
-  std::unordered_map<at::Type*, TensorGroup> groups_;
+  std::unordered_map<at::Type*, TensorGroup> groups;
   for (const auto & tensor : tensors) {
     auto & type = tensor.type();
     std::size_t tensor_size;
@@ -21,7 +21,7 @@ std::vector<TensorGroup> take_tensors(const TensorList& tensors, std::size_t siz
     } else {
       tensor_size = tensor.numel() * type.elementSizeInBytes();
     }
-    auto & type_group = groups_[&type];
+    auto & type_group = groups[&type];
     type_group.tensors.push_back(tensor);
     type_group.size += tensor_size;
     if (type_group.size + tensor_size >= size_limit) {
@@ -30,7 +30,7 @@ std::vector<TensorGroup> take_tensors(const TensorList& tensors, std::size_t siz
     }
   }
   // End case. Look for any remaining groups and return them.
-  for (auto & entry : groups_) {
+  for (auto & entry : groups) {
     auto & group = entry.second;
     if (group.size > 0) {
       results.emplace_back(std::move(group));

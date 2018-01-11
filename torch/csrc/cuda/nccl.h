@@ -33,6 +33,7 @@ ncclDataType_t _get_data_type(const at::Type& type);
 using comm_list = std::vector<ncclComm_t>;
 using stream_list = std::vector<THCStream*>;
 
+std::uint64_t version();
 bool is_available(const at::TensorList& tensors);
 void broadcast(const at::TensorList& tensors,
                const stream_list& streams = {},

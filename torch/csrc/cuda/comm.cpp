@@ -25,7 +25,7 @@ struct unique_type_checker {
   bool unique = true;
 };
 
-std::vector<Tensor> broadcast(const Tensor& tensor, const IntList& devices) {
+std::vector<Tensor> broadcast(const Tensor& tensor, const IntList devices) {
   auto & type = tensor.type();
   if (type.is_cuda() && tensor.get_device() != devices[0])
     throw std::runtime_error("device of broadcasted tensor must appear as the "
@@ -34,22 +34,22 @@ std::vector<Tensor> broadcast(const Tensor& tensor, const IntList& devices) {
   tensors.reserve(devices.size());
   if (nccl::is_available({tensor})) {
     tensors.push_back(tensor);
-    for (std::size_t i = 1, num_devices = devices.size(); i < num_devices; ++i) {
-      AutoGPU _gpu_guard(devices[i]);
+    for (auto device : devices.slice(1)) {
+      AutoGPU _gpu_guard(device);
       tensors.push_back(type.tensor(tensor.sizes()));
     }
     nccl::broadcast(tensors);
   } else {
     auto & gpu_type = type.toBackend(type.is_sparse() ? at::kSparseCUDA : at::kCUDA);
-    for (std::size_t i = 0, num_devices = devices.size(); i < num_devices; ++i) {
-      AutoGPU _gpu_guard(devices[i]);
+    for (auto device : devices) {
+      AutoGPU _gpu_guard(device);
       tensors.push_back(gpu_type.copy(tensor, true));
     }
   }
   return tensors;
 }
 
-tensor_list2d broadcast_coalesced(const TensorList& tensors, const IntList& devices, std::size_t buffer_size) {
+tensor_list2d broadcast_coalesced(const TensorList tensors, const IntList devices, std::size_t buffer_size) {
   if (!std::all_of(tensors.begin(), tensors.end(),
                    [&](const at::Tensor& t) { return t.get_device() == devices[0]; })) {
     throw std::runtime_error("all tensors must be on devices[0]");

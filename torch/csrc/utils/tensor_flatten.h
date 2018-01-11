@@ -36,11 +36,6 @@ struct TensorGroup {
     TORCH_ASSERT(!tensors.empty());
     return tensors[0].type();
   }
-
-  void clear() {
-    size = 0;
-    tensors.clear();
-  }
 };
 
 std::vector<TensorGroup> take_tensors(const at::TensorList& tensors, std::size_t size_limit);

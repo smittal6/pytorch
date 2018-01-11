@@ -11,6 +11,7 @@
 #include <unordered_map>
 
 using namespace at;
+using namespace torch::cuda::nccl;
 using namespace torch::cuda::nccl::detail;
 
 static inline void CHECK(ncclResult_t status) {
@@ -24,11 +25,7 @@ static inline void CHECK(ncclResult_t status) {
 static const char* COMM_CAPSULE_NAME = "torch.cuda.nccl.Communicator";
 
 PyObject * THCPModule_nccl_version(PyObject *self, PyObject *args) {
-#if defined(NCCL_MAJOR)
-  return PyInt_FromLong(NCCL_MAJOR * 1000 + NCCL_MINOR * 100 + NCCL_PATCH);
-#else
-  return PyInt_FromLong(1000);  // assume NCCL 1.0
-#endif
+  return PyInt_FromLong(version());
 }
 
 PyObject * THCPModule_nccl_unique_id(PyObject *self, PyObject *args) {
